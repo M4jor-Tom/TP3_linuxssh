@@ -18,16 +18,22 @@ int main(int argc, char *argv[])
 	while(1)
 	{
 		if(rising)
-			setVentilo(++pwm);
+			setVentilo(pwm = pwm + 5);
 		else
-			setVentilo(--pwm);
-		printVentilo();
-		usleep(19607);
+			setVentilo(pwm = pwm - 5);
+		
+		usleep((unsigned int)(25000000.0/255.0));
 		
 		if(pwm == 255)
+		{
 			rising = false;
+			printVentilo();
+		}
 		else if(pwm == 0)
+		{
 			rising = true;
+			printVentilo();
+		}
 	}
 	return 0;
 }
