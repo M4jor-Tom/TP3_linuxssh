@@ -1,5 +1,11 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+void setVentilo(unsigned short int pwm);
+void printVentilo();
 
 int main(int argc, char *argv[])
 {
@@ -7,31 +13,44 @@ int main(int argc, char *argv[])
 	system("ngc -d wyclim");
 	system("echo 0 > /sys/devices/platform/stm-pwm/pwm1");
 	
+	unsigned short int pwm = 0;
+	bool rising = true;
 	while(1)
 	{
-		//Ecriture d'une PWM
-		system("echo 150 > /sys/devices/platform/stm-pwm/pwm1");
-		//Lecture d'une PWM
-		printf("Puissance du ventilateur:\n");
-		system("cat /sys/devices/platform/stm-pwm/pwm1");
-		//Attente
-		sleep(3);
+		if(rising)
+			setVentilo(++pwm);
+		else
+			setVentilo(--pwm);
+		printVentilo();
+		usleep(19607);
 		
-		//Ecriture d'une PWM
-		system("echo 200 > /sys/devices/platform/stm-pwm/pwm1");
-		//Lecture d'une PWM
-		printf("Puissance du ventilateur:\n");
-		system("cat /sys/devices/platform/stm-pwm/pwm1");
-		//Attente
-		sleep(3);
-		
-		//Ecriture d'une PWM
-		system("echo 255 > /sys/devices/platform/stm-pwm/pwm1");
-		//Lecture d'une PWM
-		printf("Puissance du ventilateur:\n");
-		system("cat /sys/devices/platform/stm-pwm/pwm1");
-		//Attente
-		sleep(4);
+		if(pwm == 255)
+			rising = false;
+		else if(pwm == 0)
+			rising = true;
 	}
 	return 0;
+}
+
+
+void setVentilo(unsigned short int pwm)
+{
+	char
+		stringPwm[4],
+		command[50] = "echo ",
+		commandEnd[] = " > /sys/devices/platform/stm-pwm/pwm1";
+	
+	sprintf(stringPwm, "%d", pwm);
+	
+	strcat(command, stringPwm);
+	strcat(command, commandEnd);
+	
+	system(command);
+}
+
+void printVentilo()
+{
+	printf("Puissance du ventilateur: ");
+	system("cat /sys/devices/platform/stm-pwm/pwm1");
+	printf("\n");
 }
